@@ -1,6 +1,8 @@
 package gg.rsmod.plugins.content.magic.teleports
 
 import gg.rsmod.plugins.content.magic.MagicSpells.on_magic_spell_button
+import gg.rsmod.plugins.content.magic.TeleportType
+import gg.rsmod.plugins.content.magic.canTeleport
 
 val TERMINATE_HOME_TELEPORT_NEUTRAL: QueueTask.() -> Unit = {
     player.animate(-1)
@@ -12,14 +14,33 @@ val TERMINATE_HOME_TELEPORT_SITTING: QueueTask.() -> Unit = {
     player.graphic(-1)
 }
 
+val HOME_TELEPORT_TIMER_ENABLED = true
+val HOME_TELEPORT_TIMER_DELAY = 3000
+val HOME_TELEPORT_TIMER = TimerKey(persistenceKey = "home_teleport_delay")
+
 HomeTeleport.values.forEach { teleport ->
+
     on_magic_spell_button(teleport.spellName) {
         if (player.hasMoveDestination()) {
             player.message("You can't use that teleport at the moment.")
             return@on_magic_spell_button
         }
-        player.queue {
-            teleport(teleport.endTile(world))
+
+        if (HOME_TELEPORT_TIMER_ENABLED && player.timers.has(HOME_TELEPORT_TIMER)) {
+            val minutes = player.timers.getMinutesLeft(HOME_TELEPORT_TIMER)
+
+            if (minutes != null) {
+                player.message("You need to wait another ${minutes.appendToString("minute")} to cast this spell.")
+            } else {
+                player.message("You need to wait another couple of seconds to cast this spell.")
+            }
+            return@on_magic_spell_button
+        }
+
+        if (player.canTeleport(TeleportType.MODERN)) {
+            player.queue(TaskPriority.STRONG) {
+                teleport(teleport.endTile(world))
+            }
         }
     }
 }
@@ -48,7 +69,8 @@ suspend fun QueueTask.teleport(endTile: Tile) {
     player.animate(4857)
     wait(2)
     player.animate(-1)
-    player.teleport(endTile)
+    player.moveTo(endTile)
+    player.timers[HOME_TELEPORT_TIMER] = HOME_TELEPORT_TIMER_DELAY
 }
 
 enum class HomeTeleport(val spellName: String, val endTile: World.() -> Tile) {
