@@ -17,7 +17,6 @@ object PlayerDeathAction {
 
     val deathPlugin: Plugin.() -> Unit = {
         val player = ctx as Player
-        player.interruptQueues()
         player.lock()
         player.queue(TaskPriority.STRONG) {
             death(player)
@@ -43,9 +42,9 @@ object PlayerDeathAction {
         player.animate(-1)
         if (instancedMap == null) {
             // Note: maybe add a player attribute for death locations
-            player.teleport(player.world.gameContext.home)
+            player.moveTo(player.world.gameContext.home)
         } else {
-            player.teleport(instancedMap.exitTile)
+            player.moveTo(instancedMap.exitTile)
             world.instanceAllocator.death(player)
         }
         player.message("Oh dear, you are dead!")

@@ -6,7 +6,6 @@ import gg.rsmod.game.message.impl.OpNpc4Message
 import gg.rsmod.game.model.attr.INTERACTING_NPC_ATTR
 import gg.rsmod.game.model.attr.INTERACTING_OPT_ATTR
 import gg.rsmod.game.model.entity.Client
-import gg.rsmod.game.model.entity.Entity
 import gg.rsmod.game.model.priv.Privilege
 import java.lang.ref.WeakReference
 
@@ -19,14 +18,13 @@ class OpNpc4Handler : MessageHandler<OpNpc4Message> {
         val npc = client.world.npcs[message.index] ?: return
 
         if (!client.lock.canNpcInteract()) {
-            client.message(Entity.YOU_CANT_REACH_THAT)
             return
         }
 
         log(client, "Npc option 4: index=%d, movement=%d, npc=%s", message.index, message.movementType, npc)
 
         if (message.movementType == 1 && client.world.privileges.isEligible(client.privilege, Privilege.ADMIN_POWER)) {
-            client.teleport(client.world.findRandomTileAround(npc.tile, 1) ?: npc.tile)
+            client.moveTo(client.world.findRandomTileAround(npc.tile, 1) ?: npc.tile)
         }
 
         client.closeInterfaceModal()

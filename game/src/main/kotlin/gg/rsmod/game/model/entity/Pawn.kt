@@ -48,22 +48,22 @@ abstract class Pawn(val world: World) : Entity() {
     /**
      * @see UpdateBlockBuffer
      */
-    var blockBuffer = UpdateBlockBuffer()
+    internal var blockBuffer = UpdateBlockBuffer()
 
     /**
      * The 3D [Tile] that this pawn was standing on, in the last game cycle.
      */
-    var lastTile: Tile? = null
+    internal var lastTile: Tile? = null
 
     /**
      * The last tile that was set for the pawn's [gg.rsmod.game.model.region.Chunk].
      */
-    var lastChunkTile: Tile? = null
+    internal var lastChunkTile: Tile? = null
 
     /**
      * Whether or not this pawn can teleported this game cycle.
      */
-    var teleport = false
+    internal var teleport = false
 
     /**
      * @see [MovementQueue]
@@ -73,12 +73,12 @@ abstract class Pawn(val world: World) : Entity() {
     /**
      * The current directions that this pawn is moving.
      */
-    var steps: MovementQueue.StepDirection? = null
+    internal var steps: MovementQueue.StepDirection? = null
 
     /**
      * The last [Direction] this pawn was facing.
      */
-    var lastFacingDirection: Direction = Direction.SOUTH
+    internal var lastFacingDirection: Direction = Direction.SOUTH
 
     /**
      * The current [LockState] which filters what actions this pawn can perform.
@@ -120,7 +120,7 @@ abstract class Pawn(val world: World) : Entity() {
     /**
      * A list of pending [Hit]s.
      */
-    val pendingHits = arrayListOf<Hit>()
+    private val pendingHits = arrayListOf<Hit>()
 
     /**
      * A [DamageMap] to keep track of who has dealt damage to this pawn.
@@ -240,6 +240,14 @@ abstract class Pawn(val world: World) : Entity() {
         if (getType().isPlayer() || this is Npc && !world.plugins.executeNpcCombat(this)) {
             world.plugins.executeCombat(this)
         }
+    }
+
+    fun addHit(hit: Hit) {
+        pendingHits.add(hit)
+    }
+
+    fun clearHits() {
+        pendingHits.clear()
     }
 
     /**
@@ -461,15 +469,15 @@ abstract class Pawn(val world: World) : Entity() {
         return route
     }
 
-    fun teleport(x: Int, z: Int, height: Int = 0) {
+    fun moveTo(x: Int, z: Int, height: Int = 0) {
         teleport = true
         tile = Tile(x, z, height)
         movementQueue.clear()
         addBlock(UpdateBlockType.MOVEMENT)
     }
 
-    fun teleport(tile: Tile) {
-        teleport(tile.x, tile.z, tile.height)
+    fun moveTo(tile: Tile) {
+        moveTo(tile.x, tile.z, tile.height)
     }
 
     fun animate(id: Int) {

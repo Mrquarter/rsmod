@@ -8,7 +8,6 @@ import gg.rsmod.game.model.Tile
 import gg.rsmod.game.model.attr.INTERACTING_OBJ_ATTR
 import gg.rsmod.game.model.attr.INTERACTING_OPT_ATTR
 import gg.rsmod.game.model.entity.Client
-import gg.rsmod.game.model.entity.Entity
 import gg.rsmod.game.model.entity.GameObject
 import gg.rsmod.game.model.entity.Player
 import gg.rsmod.game.model.priv.Privilege
@@ -24,7 +23,6 @@ class OpLoc2Handler : MessageHandler<OpLoc2Message> {
          * If player can't move, we don't do anything.
          */
         if (!client.lock.canMove()) {
-            client.message(Entity.YOU_CANT_REACH_THAT)
             return
         }
 
@@ -51,7 +49,7 @@ class OpLoc2Handler : MessageHandler<OpLoc2Message> {
 
         if (message.movementType == 1 && client.world.privileges.isEligible(client.privilege, Privilege.ADMIN_POWER)) {
             val def = obj.getDef(client.world.definitions)
-            client.teleport(client.world.findRandomTileAround(obj.tile, radius = 1, centreWidth = def.width, centreLength = def.length) ?: obj.tile)
+            client.moveTo(client.world.findRandomTileAround(obj.tile, radius = 1, centreWidth = def.width, centreLength = def.length) ?: obj.tile)
         }
 
         client.attr[INTERACTING_OPT_ATTR] = 2
